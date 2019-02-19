@@ -109,9 +109,10 @@ class SanicEndpoint(Endpoint):
     async def make_response_file(filepath: str) -> BaseHTTPResponse:
         return await FileResponse(filepath)
 
-    async def handle(self, request: Request, auth: dict, *args, **kwargs) -> BaseHTTPResponse:
+    async def handle(self, request: Request, auth: dict = None, *args, **kwargs) -> BaseHTTPResponse:
         body = {}
 
+        # aggregate data from all inputs
         body.update(self.import_body_match_info(request))
         body.update(self.import_body_json(request))
         body.update(self.import_body_args(request))
@@ -119,8 +120,7 @@ class SanicEndpoint(Endpoint):
         body.update(self.import_body_form(request))
         body.update(self.import_body_headers(request))
 
-        if auth is not None:
-            body['auth'] = auth
+        body['auth'] = auth
 
         return await self._method(request, body, *args, **kwargs)
 
@@ -133,31 +133,31 @@ class SanicEndpoint(Endpoint):
 
             return await func(request, body, *args, **kwargs)
         else:
-            return self._make_response_json(code=405, message='Method Not Allowed')
+            return await self.make_response_json(code=405, message='Method Not Allowed')
 
     async def method_get(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_head(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_post(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_put(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_delete(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_connect(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_options(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_trace(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
     async def method_patch(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
-        return self._make_response_json(code=500, message=f'{request.method} Not Impl')
+        return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
