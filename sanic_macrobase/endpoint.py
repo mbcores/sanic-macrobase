@@ -39,7 +39,7 @@ class SanicEndpoint(Endpoint):
     @staticmethod
     def import_body_args(request: Request) -> dict:
         if request.method == 'GET' and request.args is not None and len(request.args) > 0:
-            args = super.params_from_dictparams(request.args)
+            args = SanicEndpoint.params_from_dictparams(request.args)
 
             return dict(args)
 
