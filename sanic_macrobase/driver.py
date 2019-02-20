@@ -29,11 +29,11 @@ class SanicDriver(MacrobaseDriver):
         self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config))
         self._sanic.config = Config()
 
-    def update_config(self, config_obj: ClassVar[SanicDriverConfig]):
+    def update_config(self, config: SanicDriverConfig):
         """
         Add sanic driver config
         """
-        self.config.from_object(config_obj)
+        self.config.update(config)
 
     def add_routes(self, routes: List[Route]):
         """
