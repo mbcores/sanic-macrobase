@@ -1,11 +1,18 @@
 from typing import List, ClassVar
 import logging.config
+import asyncio
+import uvloop
 
-from macrobase_driver.driver import MacrobaseDriver
+from . import helpers
+
+from macrobase_driver.driver import MacrobaseDriver, Context
+from macrobase_driver.driver import MacrobaseDriver, Context
 from macrobase_driver.logging import get_logging_config
+from macrobase_driver.hook import HookHandler
 
 from sanic_macrobase.config import SanicDriverConfig
 from sanic_macrobase.route import Route
+from sanic_macrobase.hook import SanicHookNames
 
 from structlog import get_logger
 from sanic import Sanic, Blueprint
@@ -17,11 +24,11 @@ log = get_logger('SanicDriver')
 
 class SanicDriver(MacrobaseDriver):
 
-    def __init__(self, name: str = None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = name
         self.config = SanicDriverConfig()
+        self._hooks: Dict[SanicHookNames, List[HookHandler]] = {}
         self._routes = []
         self._preload_server()
 
@@ -34,6 +41,12 @@ class SanicDriver(MacrobaseDriver):
         Add sanic driver config
         """
         self.config.update(config)
+
+    def add_hook(self, name: SanicHookNames, handler):
+        if name not in self._hooks:
+            self._hooks[name] = []
+
+        self._hooks[name].append(HookHandler(self, handler))
 
     def add_routes(self, routes: List[Route]):
         """
@@ -65,9 +78,21 @@ class SanicDriver(MacrobaseDriver):
         self._logging_config = get_logging_config(self.config)
         logging.config.dictConfig(self._logging_config)
 
+    def _apply_hooks(self):
+        for name, handlers in self._hooks.items():
+            for handler in handlers:
+                self._sanic.listener(name.value)(handler)
+
+        # async def lock_context(driver, context: Context, loop):
+        #     context.lock()
+        #
+        # self._sanic.listener(SanicHookNames.after_server_start.value)(HookHandler(self, lock_context))
+        pass
+
     def _prepare_server(self):
         self._sanic.config.from_object(self.config)
         # self._apply_logging()
+        self._apply_hooks()
         self._apply_routes()
 
     def run(self, *args, **kwargs):
