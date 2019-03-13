@@ -67,7 +67,7 @@ class SanicEndpoint(Endpoint):
             args = request.form
 
             if 'multipart/form-data' in request.content_type:
-                args = super.params_from_dictparams(args)
+                args = SanicEndpoint.params_from_dictparams(args)
 
             return dict(args)
 
