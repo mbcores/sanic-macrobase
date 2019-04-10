@@ -14,6 +14,7 @@ class SanicDriverConfig(DriverConfig):
 
     DEBUG: bool = False
     WORKERS: int = 1
+    ACCESS_LOG: bool = True
 
     APP_HOST: str = '0.0.0.0'
     APP_PORT: int = 8000

@@ -104,4 +104,5 @@ class SanicDriver(MacrobaseDriver):
             host=self.config.APP_HOST,
             port=self.config.APP_PORT,
             debug=self.config.DEBUG,
-            workers=self.config.WORKERS)
+            workers=self.config.WORKERS,
+            access_log=self.config.ACCESS_LOG)
