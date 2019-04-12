@@ -3,7 +3,7 @@ from http import HTTPStatus
 from macrobase_driver.endpoint import Endpoint
 
 from sanic.request import Request
-from sanic.response import BaseHTTPResponse, text as TextResponse, json as JsonResponse, file as FileResponse
+from sanic.response import BaseHTTPResponse, text as TextResponse, json as JsonResponse, file as FileResponse, raw as RawResponse
 
 
 class SanicEndpoint(Endpoint):
@@ -82,6 +82,10 @@ class SanicEndpoint(Endpoint):
                 headers[header] = request.headers[header]
 
         return headers
+
+    @staticmethod
+    async def make_response_raw(raw_str: str, code: int = 200) -> BaseHTTPResponse:
+        return RawResponse(str.encode(raw_str), status=code)
 
     @staticmethod
     async def make_response_text(text: str, code: int = 200) -> BaseHTTPResponse:
