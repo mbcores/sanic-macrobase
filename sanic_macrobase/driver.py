@@ -27,6 +27,9 @@ class SanicDriver(MacrobaseDriver):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        if self.name is None:
+            self.name = 'SanicDriver'
+
         self.config = SanicDriverConfig()
         self._hooks: Dict[SanicHookNames, List[HookHandler]] = {}
         self._routes = []
