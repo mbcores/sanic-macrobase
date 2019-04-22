@@ -103,9 +103,13 @@ class SanicDriver(MacrobaseDriver):
 
         self._prepare_server()
 
-        self._sanic.run(
-            host=self.config.APP_HOST,
-            port=self.config.APP_PORT,
-            debug=self.config.DEBUG,
-            workers=self.config.WORKERS,
-            access_log=self.config.ACCESS_LOG)
+        try:
+            self._sanic.run(
+                host=self.config.APP_HOST,
+                port=self.config.APP_PORT,
+                debug=self.config.DEBUG,
+                workers=self.config.WORKERS,
+                access_log=self.config.ACCESS_LOG)
+        except Exception as e:
+            log.error(e)
+            self._sanic.stop()
