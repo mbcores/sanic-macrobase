@@ -38,7 +38,7 @@ class SanicEndpoint(Endpoint):
 
     @staticmethod
     def import_body_args(request: Request) -> dict:
-        if request.method == 'GET' and request.args is not None and len(request.args) > 0:
+        if request.method != 'POST' and request.args is not None and len(request.args) > 0:
             args = SanicEndpoint.params_from_dictparams(request.args)
 
             return dict(args)
@@ -165,7 +165,6 @@ class SanicEndpoint(Endpoint):
 
     async def method_patch(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
         return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
-
 
 class HealthEndpoint(SanicEndpoint):
 

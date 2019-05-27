@@ -65,6 +65,10 @@ class SanicDriver(MacrobaseDriver):
         else:
             server = Blueprint(prefix, url_prefix=prefix)
 
+        if self.config.HEALTH_ENDPOINT:
+            from .endpoint import HealthEndpoint
+            server.add_route(HealthEndpoint(self.context, self.config), '/health', {'GET', 'POST'})
+
         [server.add_route(
             r.handler,
             r.uri,
@@ -73,10 +77,6 @@ class SanicDriver(MacrobaseDriver):
             strict_slashes=r.strict_slashes,
             version=r.version,
             name=r.name) for r in self._routes]
-
-        if self.config.HEALTH_ENDPOINT:
-            from .endpoint import HealthEndpoint
-            server.add_route(HealthEndpoint(self.context, self.config), '/health', {'GET', 'POST'})
 
         if isinstance(server, Blueprint):
             self._sanic.blueprint(server)

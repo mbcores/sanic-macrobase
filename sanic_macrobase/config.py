@@ -17,6 +17,6 @@ class SanicDriverConfig(DriverConfig):
     ACCESS_LOG: bool = True
     HEALTH_ENDPOINT: bool = True
 
-    APP_HOST: str = '0.0.0.0'
+    APP_HOST: str = 'localhost'
     APP_PORT: int = 8000
     APP_BLUEPRINT: str = ''
