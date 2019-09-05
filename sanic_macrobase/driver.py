@@ -29,8 +29,11 @@ class SanicDriver(MacrobaseDriver):
 
         if self.name is None:
             self.name = 'SanicDriver'
-
-        self.config = SanicDriverConfig()
+        
+        config = kwargs.get('config', None)
+        if config is None:
+            config = SanicDriverConfig()
+        self.config = config
         self._hooks: Dict[SanicHookNames, List[HookHandler]] = {}
         self._routes = []
         self._preload_server()
@@ -98,7 +101,7 @@ class SanicDriver(MacrobaseDriver):
 
     def _prepare_server(self):
         self._sanic.config.from_object(self.config)
-        # self._apply_logging()
+        self._apply_logging()
         self._apply_hooks()
         self._apply_routes()
 
