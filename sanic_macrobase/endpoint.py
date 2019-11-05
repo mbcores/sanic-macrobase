@@ -166,6 +166,7 @@ class SanicEndpoint(Endpoint):
     async def method_patch(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
         return await self.make_response_json(code=500, message=f'{request.method} Not Impl')
 
+
 class HealthEndpoint(SanicEndpoint):
 
     async def method_get(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:

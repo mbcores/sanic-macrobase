@@ -1,14 +1,11 @@
-from typing import List, ClassVar
+from typing import List
 import logging.config
-import asyncio
-import uvloop
 
 from . import helpers
 
 from macrobase_driver.driver import MacrobaseDriver, Context
-from macrobase_driver.driver import MacrobaseDriver, Context
 from macrobase_driver.logging import get_logging_config
-from macrobase_driver.hook import HookHandler
+from macrobase_driver.config import CommonConfig, AppConfig
 
 from sanic_macrobase.config import SanicDriverConfig
 from sanic_macrobase.route import Route
@@ -16,7 +13,6 @@ from sanic_macrobase.hook import SanicHookNames
 
 from structlog import get_logger
 from sanic import Sanic, Blueprint
-from sanic.config import Config
 
 
 log = get_logger('SanicDriver')
@@ -29,30 +25,27 @@ class SanicDriver(MacrobaseDriver):
 
         if self.name is None:
             self.name = 'SanicDriver'
-        
-        config = kwargs.get('config', None)
-        if config is None:
-            config = SanicDriverConfig()
-        self.config = config
-        self._hooks: Dict[SanicHookNames, List[HookHandler]] = {}
+
         self._routes = []
         self._preload_server()
 
-    def _preload_server(self):
-        self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config))
-        self._sanic.config = Config()
+    @property
+    def config(self) -> CommonConfig[AppConfig, SanicDriverConfig]:
+        return self._config
 
-    def update_config(self, config: SanicDriverConfig):
-        """
-        Add sanic driver config
-        """
-        self.config.update(config)
+    def _preload_server(self):
+        self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config.app))
+        self._sanic.config = self.config.driver.get_sanic_config()
 
     def add_hook(self, name: SanicHookNames, handler):
-        if name not in self._hooks:
-            self._hooks[name] = []
+        """
+        Add hook handler
 
-        self._hooks[name].append(HookHandler(self, handler))
+        Args:
+            name (SanicHookNames): Enum of hook event
+            handler: Function of callback
+        """
+        super().add_hook(name.value, handler)
 
     def add_routes(self, routes: List[Route]):
         """
@@ -61,14 +54,14 @@ class SanicDriver(MacrobaseDriver):
         self._routes.extend(routes)
 
     def _apply_routes(self):
-        prefix = self.config.APP_BLUEPRINT
+        prefix = self.config.driver.blueprint
 
         if prefix is None or len(prefix) == 0:
             server = self._sanic
         else:
             server = Blueprint(prefix, url_prefix=prefix)
 
-        if self.config.HEALTH_ENDPOINT:
+        if self.config.driver.health_endpoint:
             from .endpoint import HealthEndpoint
             server.add_route(HealthEndpoint(self.context, self.config), '/health', {'GET', 'POST'})
 
@@ -85,13 +78,13 @@ class SanicDriver(MacrobaseDriver):
             self._sanic.blueprint(server)
 
     def _apply_logging(self):
-        self._logging_config = get_logging_config(self.config)
+        self._logging_config = get_logging_config(self.config.app)
         logging.config.dictConfig(self._logging_config)
 
     def _apply_hooks(self):
         for name, handlers in self._hooks.items():
             for handler in handlers:
-                self._sanic.listener(name.value)(handler)
+                self._sanic.listener(name)(handler)
 
         # async def lock_context(driver, context: Context, loop):
         #     context.lock()
@@ -100,7 +93,6 @@ class SanicDriver(MacrobaseDriver):
         pass
 
     def _prepare_server(self):
-        self._sanic.config.from_object(self.config)
         self._apply_logging()
         self._apply_hooks()
         self._apply_routes()
@@ -112,11 +104,12 @@ class SanicDriver(MacrobaseDriver):
 
         try:
             self._sanic.run(
-                host=self.config.APP_HOST,
-                port=self.config.APP_PORT,
-                debug=self.config.DEBUG,
-                workers=self.config.WORKERS,
-                access_log=self.config.ACCESS_LOG)
+                host=self.config.driver.host,
+                port=self.config.driver.port,
+                workers=self.config.driver.workers,
+
+                debug=self.config.app.debug,
+                access_log=self.config.driver.access_log)
         except Exception as e:
             log.error(e)
             self._sanic.stop()
