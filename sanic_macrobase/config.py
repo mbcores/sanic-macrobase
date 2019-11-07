@@ -1,37 +1,38 @@
-from macrobase_driver.config import DriverConfig
+from macrobase_driver.config import DriverConfig, fields
 
 from sanic.config import Config
 
 
 class SanicDriverConfig(DriverConfig):
 
-    logo: str = """
+    logo = fields.Str("""
  _____       _
 |  __ \     (_)               
 | |  | |_ __ ___   _____ _ __ 
 | |  | | '__| \ \ / / _ \ '__|
 | |__| | |  | |\ V /  __/ |   
 |_____/|_|  |_| \_/ \___|_|sanic
-    """
+    """)
 
-    workers: int = 1
-    health_endpoint: bool = True
+    workers = fields.Int(1)
 
-    host: str = '0.0.0.0'
-    port: int = 8000
-    blueprint: str = ''
+    host = fields.Str('0.0.0.0')
+    port = fields.Int(8000)
 
-    request_max_size = 100000000  # 100 megabytes
-    request_timeout = 60  # 60 seconds
-    response_timeout = 60  # 60 seconds
-    keep_alive = True
-    keep_alive_timeout = 5  # 5 seconds
-    websocket_max_size = 2 ** 20  # 1 megabytes
-    websocket_max_queue = 32
-    websocket_read_limit = 2 ** 16
-    websocket_write_limit = 2 ** 16
-    graceful_shutdown_timeout = 15.0  # 15 sec
-    access_log = True
+    blueprint = fields.Str('')
+    health_endpoint = fields.Bool(True)
+
+    request_max_size            = fields.Int(100000000)  # 100 megabytes
+    request_timeout             = fields.Int(60)  # 60 seconds
+    response_timeout            = fields.Int(60)  # 60 seconds
+    keep_alive                  = fields.Bool(True)
+    keep_alive_timeout          = fields.Int(5)  # 5 seconds
+    websocket_max_size          = fields.Int(2 ** 20)  # 1 megabytes
+    websocket_max_queue         = fields.Int(32)
+    websocket_read_limit        = fields.Int(2 ** 16)
+    websocket_write_limit       = fields.Int(2 ** 16)
+    graceful_shutdown_timeout   = fields.Int(15.0)  # 15 sec
+    access_log                  = fields.Bool(True)
 
     def get_sanic_config(self) -> Config:
         c = Config()
