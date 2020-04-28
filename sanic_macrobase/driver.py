@@ -1,6 +1,9 @@
 from typing import List
 import logging.config
 
+import sentry_sdk
+from sentry_sdk.integrations.sanic import SanicIntegration
+
 from . import helpers
 
 from macrobase_driver.driver import MacrobaseDriver, Context
@@ -34,6 +37,13 @@ class SanicDriver(MacrobaseDriver):
         return self._config
 
     def _preload_server(self):
+        if self.config.driver.sentry_dsn:
+            sentry_sdk.init(
+                dsn=self.config.driver.sentry_dsn,
+                integrations=[SanicIntegration()],
+                environment=self.config.driver.sentry_env
+            )
+
         self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config.app))
         self._sanic.config = self.config.driver.get_sanic_config()
 
