@@ -1,12 +1,10 @@
-from typing import List
+from typing import List, Type, Callable
 import logging.config
 
 import sentry_sdk
 from sentry_sdk.integrations.sanic import SanicIntegration
 
-from . import helpers
-
-from macrobase_driver.driver import MacrobaseDriver, Context
+from macrobase_driver.driver import MacrobaseDriver
 from macrobase_driver.logging import get_logging_config
 from macrobase_driver.config import CommonConfig, AppConfig
 
@@ -16,6 +14,8 @@ from sanic_macrobase.hook import SanicHookNames
 
 from structlog import get_logger
 from sanic import Sanic, Blueprint
+from sanic.request import Request
+from sanic.handlers import ErrorHandler
 
 
 log = get_logger('SanicDriver')
@@ -62,6 +62,12 @@ class SanicDriver(MacrobaseDriver):
         Add HTTP routes
         """
         self._routes.extend(routes)
+
+    def set_error_handler(self, error_handler: ErrorHandler):
+        self._sanic.error_handler = error_handler
+
+    def add_error_handler(self, exception_cls: Type[Exception], func: Callable[[Request, Exception], None]):
+        self._sanic.error_handler.add(exception_cls, func)
 
     def _apply_routes(self):
         prefix = self.config.driver.blueprint
