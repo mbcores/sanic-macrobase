@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Type, Callable
 import logging.config
 
-from . import helpers
+import sentry_sdk
+from sentry_sdk.integrations.sanic import SanicIntegration
 
-from macrobase_driver.driver import MacrobaseDriver, Context
+from macrobase_driver.driver import MacrobaseDriver
 from macrobase_driver.logging import get_logging_config
 from macrobase_driver.config import CommonConfig, AppConfig
 
@@ -13,7 +14,8 @@ from sanic_macrobase.hook import SanicHookNames
 
 from structlog import get_logger
 from sanic import Sanic, Blueprint
-
+from sanic.request import Request
+from sanic.handlers import ErrorHandler
 
 log = get_logger('SanicDriver')
 
@@ -34,6 +36,13 @@ class SanicDriver(MacrobaseDriver):
         return self._config
 
     def _preload_server(self):
+        if self.config.driver.sentry_dsn:
+            sentry_sdk.init(
+                dsn=self.config.driver.sentry_dsn,
+                integrations=[SanicIntegration()],
+                environment=self.config.driver.sentry_env
+            )
+
         self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config.app))
         self._sanic.config = self.config.driver.get_sanic_config()
 
@@ -52,6 +61,23 @@ class SanicDriver(MacrobaseDriver):
         Add HTTP routes
         """
         self._routes.extend(routes)
+
+    def set_error_handler(self, error_handler: ErrorHandler):
+        """
+        Set error handler for sanic application
+        Args:
+            error_handler (ErrorHandler): Instance of error handler
+        """
+        self._sanic.error_handler = error_handler
+
+    def add_error_handler(self, exception_cls: Type[Exception], func: Callable[[Request, Exception], None]):
+        """
+        Add error handler function for Exception class type
+        Args:
+            exception_cls (Type[Exception]): Type of Exception
+            func (Callable[[Request, Exception], None]): Function for calling
+        """
+        self._sanic.error_handler.add(exception_cls, func)
 
     def _apply_routes(self):
         prefix = self.config.driver.blueprint
