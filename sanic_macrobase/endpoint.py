@@ -84,12 +84,22 @@ class SanicEndpoint(Endpoint):
         return headers
 
     @staticmethod
-    async def make_response_raw(raw_str: str, code: int = 200) -> BaseHTTPResponse:
-        return RawResponse(str.encode(raw_str), status=code)
+    async def make_response_raw(
+            raw_str: str,
+            code: int = 200,
+            headers: dict = None,
+            content_type: str = "application/octet-stream"
+    ) -> BaseHTTPResponse:
+        return RawResponse(str.encode(raw_str), status=code, headers=headers, content_type=content_type)
 
     @staticmethod
-    async def make_response_text(text: str, code: int = 200) -> BaseHTTPResponse:
-        return TextResponse(text, status=code)
+    async def make_response_text(
+            text: str,
+            code: int = 200,
+            headers: dict = None,
+            content_type: str = "text/plain; charset=utf-8"
+    ) -> BaseHTTPResponse:
+        return TextResponse(text, status=code, headers=headers, content_type=content_type)
 
     @staticmethod
     async def make_response_json(code: int = 200, message: str = None, data: dict = None, error_code: int = None) -> BaseHTTPResponse:
