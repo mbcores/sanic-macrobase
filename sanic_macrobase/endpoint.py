@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from macrobase_driver.endpoint import Endpoint
+from macrobase_driver.logging import get_request_id
 
 from sanic.request import Request
 from sanic.response import BaseHTTPResponse, text as TextResponse, json as JsonResponse, file as FileResponse, raw as RawResponse
@@ -90,6 +91,8 @@ class SanicEndpoint(Endpoint):
             headers: dict = None,
             content_type: str = "application/octet-stream"
     ) -> BaseHTTPResponse:
+        headers = headers or {}
+        headers['x-cross-request-id'] = get_request_id()
         return RawResponse(str.encode(raw_str), status=code, headers=headers, content_type=content_type)
 
     @staticmethod
@@ -99,12 +102,24 @@ class SanicEndpoint(Endpoint):
             headers: dict = None,
             content_type: str = "text/plain; charset=utf-8"
     ) -> BaseHTTPResponse:
+        headers = headers or {}
+        headers['x-cross-request-id'] = get_request_id()
         return TextResponse(text, status=code, headers=headers, content_type=content_type)
 
     @staticmethod
-    async def make_response_json(code: int = 200, message: str = None, data: dict = None, error_code: int = None) -> BaseHTTPResponse:
+    async def make_response_json(
+            code: int = 200,
+            message: str = None,
+            data: dict = None,
+            error_code: int = None,
+            headers: dict = None,
+    ) -> BaseHTTPResponse:
+
+        headers = headers or {}
+        headers['x-cross-request-id'] = get_request_id()
+
         if data is not None:
-            return JsonResponse(data)
+            return JsonResponse(data, headers=headers)
 
         if message is None:
             message = HTTPStatus(code).phrase
@@ -117,11 +132,14 @@ class SanicEndpoint(Endpoint):
             'message': message
         }
 
-        return JsonResponse(data, status=code)
+        return JsonResponse(data, status=code, headers=headers)
 
     @staticmethod
-    async def make_response_file(filepath: str) -> BaseHTTPResponse:
-        return await FileResponse(filepath)
+    async def make_response_file(filepath: str, headers: dict = None) -> BaseHTTPResponse:
+        headers = headers or {}
+        headers['x-cross-request-id'] = get_request_id()
+
+        return await FileResponse(filepath, headers=headers)
 
     async def handle(self, request: Request, auth: dict = None, *args, **kwargs) -> BaseHTTPResponse:
         body = {}
