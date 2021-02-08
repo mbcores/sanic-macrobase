@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from macrobase_driver.endpoint import Endpoint
-from macrobase_driver.logging import get_request_id
+from macrobase_driver.logging import get_request_id, set_request_id
 
 from sanic.request import Request
 from sanic.response import BaseHTTPResponse, text as TextResponse, json as JsonResponse, file as FileResponse, raw as RawResponse
@@ -157,6 +157,7 @@ class SanicEndpoint(Endpoint):
         return await self._method(request, body, *args, **kwargs)
 
     async def _method(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
+        set_request_id()
         method = request.method.lower()
         func_name = f'method_{method}'
 
