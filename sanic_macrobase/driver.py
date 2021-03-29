@@ -40,7 +40,8 @@ class SanicDriver(MacrobaseDriver):
             sentry_sdk.init(
                 dsn=self.config.driver.sentry_dsn,
                 integrations=[SanicIntegration()],
-                environment=self.config.driver.sentry_env
+                environment=self.config.driver.sentry_env,
+                release=self.config.driver.version,
             )
 
         self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config.app))

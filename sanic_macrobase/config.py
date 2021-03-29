@@ -36,6 +36,7 @@ class SanicDriverConfig(DriverConfig):
 
     sentry_dsn                  = fields.Str('', env_key='SENTRY_DSN')
     sentry_env                  = fields.Str('', env_key='SENTRY_ENV')
+    version                     = fields.Str('', env_key='VERSION')
 
     def get_sanic_config(self) -> Config:
         c = Config()
