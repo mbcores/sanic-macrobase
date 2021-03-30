@@ -157,14 +157,16 @@ class SanicEndpoint(Endpoint):
     async def _method(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
         set_request_id()
         method = request.method.lower()
-        func_name = f'method_{method}'
 
-        if hasattr(self, func_name):
-            func = getattr(self, func_name)
+        func = getattr(self, f'method_{method}', self._method_not_allowed)
 
+        try:
             return await func(request, body, *args, **kwargs)
-        else:
-            return await self.make_response_json(code=405, message='Method Not Allowed')
+        finally:
+            set_request_id()
+
+    async def _method_not_allowed(self, *args, **kwargs) -> BaseHTTPResponse:
+        return await self.make_response_json(code=405, message='Method Not Allowed')
 
     async def method_get(self, request: Request, body: dict, *args, **kwargs) -> BaseHTTPResponse:
         return await self.make_response_json(code=500, message=f'{request.method} Not Impl')

@@ -40,7 +40,8 @@ class SanicDriver(MacrobaseDriver):
             sentry_kwargs = dict(
                 dsn=self.config.driver.sentry_dsn,
                 integrations=[SanicIntegration()],
-                environment=self.config.driver.sentry_env
+                environment=self.config.driver.sentry_env,
+                release=self.config.driver.version,
             )
             sentry_kwargs.update(self.config.driver.sentry_kwargs)
             sentry_sdk.init(**sentry_kwargs)
