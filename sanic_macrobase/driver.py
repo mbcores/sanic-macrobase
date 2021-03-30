@@ -37,11 +37,13 @@ class SanicDriver(MacrobaseDriver):
 
     def _preload_server(self):
         if self.config.driver.sentry_dsn:
-            sentry_sdk.init(
+            sentry_kwargs = dict(
                 dsn=self.config.driver.sentry_dsn,
                 integrations=[SanicIntegration()],
                 environment=self.config.driver.sentry_env
             )
+            sentry_kwargs.update(self.config.driver.sentry_kwargs)
+            sentry_sdk.init(**sentry_kwargs)
 
         self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config.app))
         self._sanic.config = self.config.driver.get_sanic_config()

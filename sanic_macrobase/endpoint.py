@@ -108,18 +108,16 @@ class SanicEndpoint(Endpoint):
 
     @staticmethod
     async def make_response_json(
-            code: int = 200,
-            message: str = None,
-            data: dict = None,
-            error_code: int = None,
-            headers: dict = None,
+            code: int = 200, message: str = None, data: dict = None, error_code: int = None, **kwargs
     ) -> BaseHTTPResponse:
-
-        headers = headers or {}
-        headers['x-cross-request-id'] = get_request_id()
+        response_kwargs = dict(
+            ensure_ascii=False,
+            escape_forward_slashes=False,
+        )
+        response_kwargs.update(kwargs)
 
         if data is not None:
-            return JsonResponse(data, headers=headers)
+            return JsonResponse(data, **response_kwargs)
 
         if message is None:
             message = HTTPStatus(code).phrase
@@ -132,7 +130,7 @@ class SanicEndpoint(Endpoint):
             'message': message
         }
 
-        return JsonResponse(data, status=code, headers=headers)
+        return JsonResponse(data, status=code, **response_kwargs)
 
     @staticmethod
     async def make_response_file(filepath: str, headers: dict = None) -> BaseHTTPResponse:
