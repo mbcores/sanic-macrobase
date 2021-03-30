@@ -34,6 +34,10 @@ class SanicDriverConfig(DriverConfig):
     graceful_shutdown_timeout   = fields.Int(15.0)  # 15 sec
     access_log                  = fields.Bool(True)
 
+    sentry_dsn                  = fields.Str('', env_key='SENTRY_DSN')
+    sentry_env                  = fields.Str('', env_key='SENTRY_ENV')
+    version                     = fields.Str('', env_key='VERSION')
+
     def get_sanic_config(self) -> Config:
         c = Config()
         c.LOGO = self.logo
