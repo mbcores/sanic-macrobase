@@ -42,6 +42,8 @@ class SanicDriver(MacrobaseDriver):
                 integrations=[SanicIntegration()],
                 environment=self.config.driver.sentry_env,
                 release=self.config.driver.version,
+                ignore_errors=self.config.driver.sentry_ignore_errors,
+                **self.config.driver.sentry_kwargs,
             )
 
         self._sanic = Sanic(name=self.name, log_config=get_logging_config(self.config.app))
