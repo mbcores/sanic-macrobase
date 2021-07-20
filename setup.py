@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='sanic_macrobase',
-    version='2.4.1',
+    version='2.4.2',
     packages=find_packages(),
     url='https://github.com/mbcores/sanic-macrobase',
     license='MIT',

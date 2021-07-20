@@ -42,6 +42,8 @@ class SanicDriver(MacrobaseDriver):
                 integrations=[SanicIntegration()],
                 environment=self.config.driver.sentry_env,
                 release=self.config.driver.version,
+                ignore_errors=self.config.driver.sentry_ignore_errors,
+                **self.config.driver.sentry_kwargs,
             )
             sentry_kwargs.update(self.config.driver.sentry_kwargs)
             sentry_sdk.init(**sentry_kwargs)
