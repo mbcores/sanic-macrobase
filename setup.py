@@ -11,7 +11,7 @@ setup(
     description='Sanic driver for macrobase framework',
     install_requires=[
         'macrobase-driver>=2.0.0,<3.0.0',
-        'sanic==18.12.0',
+        'sanic==20.12.7',
         'structlog==19.2.0',
         'sentry-sdk>=0.14.3',
         'aiocontextvars==0.2.2'
